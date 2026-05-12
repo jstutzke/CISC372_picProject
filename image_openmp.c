@@ -3,8 +3,8 @@
 #include <time.h>
 #include <string.h>
 #include "image.h"
+#include <pthread.h>
 #include <stdlib.h>
-#include <omp.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -59,19 +59,61 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 //            algorithm: The kernel matrix to use for the convolution
 //Returns: Nothing
 
+// make your own struct that is the header of convolute and then pass it in, and the rank
+typedef struct {
+    Image* srcImage;
+    Image* destImage;
+    Matrix algorithm;
+    int startRow;
+    int endRow;
+} ThreadData;
 
-void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
-    int row,pix,bit,span;
-    span=srcImage->bpp*srcImage->bpp;
+void* convoluteThread(void* arg) {
+    ThreadData* data = (ThreadData*)arg;
+    int row, pix, bit;
 
-    #pragma omp parallel for private(pix, bit)
-    for (row=0;row<srcImage->height;row++){
-        for (pix=0;pix<srcImage->width;pix++){
-            for (bit=0;bit<srcImage->bpp;bit++){
-                destImage->data[Index(pix,row,srcImage->width,bit,srcImage->bpp)]=getPixelValue(srcImage,pix,row,bit,algorithm);
+    for (row = data->startRow; row < data->endRow; row++) {
+        for (pix = 0; pix < data->srcImage->width; pix++) {
+            for (bit = 0; bit < data->srcImage->bpp; bit++) {
+                data->destImage->data[Index(pix, row, data->srcImage->width, bit, data->srcImage->bpp)] =
+                getPixelValue(data->srcImage, pix, row, bit, data->algorithm);
             }
         }
     }
+    return NULL;
+}
+
+void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
+    int numThreads = 4;
+    pthread_t threads[numThreads];
+    ThreadData threadData[numThreads];
+
+    int rowsPerThread = srcImage->height / numThreads;
+    int extraRows = srcImage->height % numThreads;
+
+    int currentRow = 0;
+
+    for (int i=0; i < numThreads; i++) {
+        threadData[i].srcImage = srcImage;
+        threadData[i].destImage = destImage;
+        memcpy(threadData[i].algorithm, algorithm, sizeof(Matrix));
+        threadData[i].startRow = currentRow;
+
+        int myRows = rowsPerThread;
+        if (i < extraRows) {
+            myRows++;
+        }
+
+        threadData[i].endRow = currentRow + myRows;
+        currentRow = threadData[i].endRow;
+        pthread_create(&threads[i], NULL, convoluteThread, &threadData[i]);
+    }
+
+    for (int i = 0; i < numThreads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    
+    return;
 }
 
 //Usage: Prints usage information for the program
