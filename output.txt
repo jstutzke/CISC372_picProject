@@ -1,0 +1,11 @@
+Script started on Tue 12 May 2026 08:01:10 PM EDT
+]0;jgstut@r1n00.darwin:~/CISC372_picProject[?1034h[(ea-cisc372-silber:jgstut)@r1n00 CISC372_picProject]$ gcc -std=c99 image.c  -o image -lpthread -lm
+]0;jgstut@r1n00.darwin:~/CISC372_picProject[(ea-cisc372-silber:jgstut)@r1n00 CISC372_picProject]$ gcc -std=c99 image_opeenmp.c -o image_openmp -fopenmp -lm
+]0;jgstut@r1n00.darwin:~/CISC372_picProject[(ea-cisc372-silber:jgstut)@r1n00 CISC372_picProject]$ ./image pic1.jpg edge [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ke
+Took 7 seconds
+]0;jgstut@r1n00.darwin:~/CISC372_picProject[(ea-cisc372-silber:jgstut)@r1n00 CISC372_picProject]$ ./image_openmp pic1.jppg edge
+Took 6 seconds
+]0;jgstut@r1n00.darwin:~/CISC372_picProject[(ea-cisc372-silber:jgstut)@r1n00 CISC372_picProject]$ eit[K[Kxit
+exit
+
+Script done on Tue 12 May 2026 08:02:55 PM EDT
